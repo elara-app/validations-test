@@ -1,0 +1,46 @@
+name: Shared CI Workflow
+
+on:
+  workflow_call:
+    inputs:
+      job-name:
+        required: true
+        type: string
+      deploy:
+        required: false
+        type: boolean
+        default: false
+      target-branch:
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  build:
+    name: ${{ inputs.job-name }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: oracle
+          java-version: ${{ vars.JDK_VERSION }}
+          server-id: github
+          server-username: ${{ github.actor }}
+          server-password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and Verify
+        run: mvn clean verify --batch-mode
+
+      - name: Deploy to Maven (if enabled)
+        if: ${{ inputs.deploy == true }}
+        run: mvn deploy -DskipTests
