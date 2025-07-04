@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+      packages: write
     outputs:
       final_version: ${{ steps.final_version.outputs.version }}
     steps:
