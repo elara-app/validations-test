@@ -1,0 +1,61 @@
+name: CI Pull Request Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
+
+jobs:
+  set-version:
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+
+      - name: Set version based on branch
+        id: version
+        run: |
+          BRANCH="${{ steps.branch.outputs.branch }}"
+          case "$BRANCH" in
+            main)
+              echo "version=$(date +'%Y.%m.%d-PR')" >> "$GITHUB_OUTPUT"
+              ;;
+            develop)
+              echo "version=0.0.1-SNAPSHOT" >> "$GITHUB_OUTPUT"
+              ;;
+            release/*)
+              echo "version=1.0.0-RC1" >> "$GITHUB_OUTPUT"
+              ;;
+            hotfix/*)
+              echo "version=1.0.1-${BRANCH##*/}" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "version=0.0.1-unknown-PR" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+          echo "Calculated PR version: ${{ steps.version.outputs.version }}"
+
+      - name: Update pom.xml Version (for CI testing)
+        run: mvn org.codehaus.mojo:versions-maven-plugin:2.18.0:set -DnewVersion=${{ steps.version.outputs.version }} -DgenerateBackupPoms=false
+
+      - name: Commit Version Bump (Local for CI)
+        run: |
+          git config --local user.name "github-actions"
+          git config --local user.email "github-actions@github.com"
+          git commit -am "chore: bump version for CI to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+
+  call-shared-ci-workflow:
+    needs: set-version
+    uses: ./.github/workflows/ci-shared.yml
+    with:
+      job-name: "Build with PR Versioning"
+      deploy: false # El despliegue real no ocurre en la validación de PR
+      target-branch: ${{ github.base_ref }}

@@ -1,0 +1,67 @@
+name: Release Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+      - 'hotfix/**'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-22.04
+    outputs:
+      final_version: ${{ steps.final_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Get branch name
+        id: branch_name
+        run: echo "branch=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+
+      - name: Calculate final version for Release
+        id: final_version
+        run: |
+          BRANCH="${{ steps.branch_name.outputs.branch }}"
+          case "$BRANCH" in
+            main)
+              echo "version=$(date +'%Y.%m.%d')" >> "$GITHUB_OUTPUT"
+              ;;
+            release/*)
+              echo "version=${BRANCH#release/}-RC" >> "$GITHUB_OUTPUT"
+              ;;
+            hotfix/*)
+              echo "version=${BRANCH#hotfix/}-fix" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "version=unversioned" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+          echo "Final release version: ${{ steps.final_version.outputs.version }}"
+
+      - name: Tag and Release
+        if: startsWith(github.ref, 'refs/heads/main')
+        run: |
+          VERSION=${{ steps.final_version.outputs.version }}
+          echo "Creating tag v$VERSION"
+          git tag v$VERSION
+          git push origin v$VERSION
+
+          echo "Creating GitHub Release v$VERSION"
+          gh release create v$VERSION --title "Release $VERSION" --notes "Automated release from GitHub Actions for ${{ github.ref_name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-production:
+    needs: create-release
+    if: startsWith(github.ref, 'refs/heads/main') && success()
+    uses: ./.github/workflows/ci-shared.yml
+    with:
+      job-name: "Deploy to Production"
+      deploy: true
+      target-branch: ${{ github.ref_name }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
