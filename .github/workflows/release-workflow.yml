@@ -10,6 +10,8 @@ on:
 jobs:
   create-release:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     outputs:
       final_version: ${{ steps.final_version.outputs.version }}
     steps:
@@ -63,5 +65,3 @@ jobs:
       job-name: "Deploy to Production"
       deploy: true
       target-branch: ${{ github.ref_name }}
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
