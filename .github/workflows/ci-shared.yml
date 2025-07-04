@@ -27,7 +27,9 @@ jobs:
         with:
           distribution: oracle
           java-version: ${{ vars.JDK_VERSION }}
-          server-id: github
+          server-id: |
+            github-releases
+            github-snapshots
           server-username: ${{ github.actor }}
           server-password: ${{ secrets.GITHUB_TOKEN }}
 
