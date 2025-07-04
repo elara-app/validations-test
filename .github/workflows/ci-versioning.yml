@@ -1,0 +1,65 @@
+name: CI Versioning by Branch
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
+
+jobs:
+  set-version:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+
+      - name: Set version based on branch
+        id: version
+        run: |
+          BRANCH="${{ steps.branch.outputs.branch }}"
+          case "$BRANCH" in
+            main)
+              echo "version=$(date +'%Y.%m.%d')" >> "$GITHUB_OUTPUT"
+              ;;
+            develop)
+              echo "version=0.0.1-SNAPSHOT" >> "$GITHUB_OUTPUT"
+              ;;
+            release/*)
+              echo "version=1.0.0-RC1" >> "$GITHUB_OUTPUT"
+              ;;
+            hotfix/*)
+              echo "version=1.0.1-${BRANCH##*/}" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "version=0.0.1-unknown" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
+      - name: Update pom.xml Version
+        run: mvn org.codehaus.mojo:versions-maven-plugin:2.18.0:set -DnewVersion=${{ steps.version.outputs.version }} -DgenerateBackupPoms=false
+
+      - name: Commit Version Bump
+        run: |
+          git config --local user.name "github-actions"
+          git config --local user.email "github-actions@github.com"
+          git commit -am "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+
+      - name: Call Shared CI Workflow
+        uses: ./.github/workflows/ci-shared.yml
+        with:
+          job-name: "Build with versioning"
+          deploy: ${{ github.base_ref == 'main' }}
+
+      - name: Tag and Release (Only Main Branch)
+        if: github.base_ref == 'main'
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          git tag v$VERSION
+          git push origin v$VERSION
+          gh release create v$VERSION --title "Release $VERSION" --notes "Automated release from GitHub Actions"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
