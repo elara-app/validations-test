@@ -63,5 +63,3 @@ jobs:
       job-name: "Deploy to Production"
       deploy: true
       target-branch: ${{ github.ref_name }}
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
