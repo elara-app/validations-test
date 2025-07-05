@@ -25,9 +25,9 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: oracle
+          distribution: 'temurin'
           java-version: ${{ vars.JDK_VERSION }}
-          server-id: "github-releases"
+          server-id: github-releases
           server-username: ${{ github.actor }}
           server-password: ${{ secrets.GITHUB_TOKEN }}
 
