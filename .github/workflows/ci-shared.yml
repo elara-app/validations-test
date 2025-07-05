@@ -19,8 +19,6 @@ jobs:
   build:
     name: ${{ inputs.job-name }}
     runs-on: ubuntu-22.04
-    permissions:
-      packages: write
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +27,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ vars.JDK_VERSION }}
-          server-id: github-releases
 
       - name: Configure Maven settings.xml
         run: |
@@ -38,7 +35,7 @@ jobs:
           <settings>
             <servers>
               <server>
-                <id>github-releases</id>
+                <id>github-elara-app-validations-test</id>
                 <username>${GITHUB_ACTOR}</username>
                 <password>${GITHUB_TOKEN}</password>
               </server>
@@ -48,9 +45,6 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set JDK Version
-        run: echo "JDK_VERSION=${{ vars.JDK_VERSION }}"
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4
