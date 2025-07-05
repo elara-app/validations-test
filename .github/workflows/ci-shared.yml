@@ -27,9 +27,12 @@ jobs:
         with:
           distribution: oracle
           java-version: ${{ vars.JDK_VERSION }}
-          server-id: "github-releases github-snapshots"
+          server-id: "github-releases"
           server-username: ${{ github.actor }}
           server-password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set JDK Version
+        run: echo "JDK_VERSION=${{ vars.JDK_VERSION }}"
 
       - name: Cache Maven dependencies
         uses: actions/cache@v4
