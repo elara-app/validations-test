@@ -43,6 +43,9 @@ jobs:
       - name: Build and Verify
         run: mvn clean verify --batch-mode
 
+      - name: Show Maven Settings.xml for Debugging
+        run: cat ~/.m2/settings.xml
+
       - name: Deploy to Maven (if enabled)
         if: ${{ inputs.deploy == true }}
         run: mvn deploy -DskipTests
