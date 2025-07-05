@@ -60,6 +60,8 @@ jobs:
 
   deploy-production:
     needs: create-release
+    permissions:
+      packages: write
     if: startsWith(github.ref, 'refs/heads/main') && success()
     uses: ./.github/workflows/ci-shared.yml
     with:
