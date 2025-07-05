@@ -60,15 +60,6 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
-
-		<snapshotRepository>
-			<id>github-snapshots</id>
-			<name>GitHub Packages - Snapshots</name>
-			<url>https://maven.pkg.github.com/elara-app/validations-test</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</snapshotRepository>
 	</distributionManagement>
 
 </project>
