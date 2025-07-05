@@ -8,7 +8,7 @@
 		<version>3.5.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.github.elara-app</groupId>
+	<groupId>com.github.elara.app</groupId>
 	<artifactId>validation-utils-test</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>validation-utils-test</name>
