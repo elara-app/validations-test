@@ -8,7 +8,8 @@
 		<version>3.5.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.github.elara.app</groupId>
+
+	<groupId>com.elara.app</groupId> <!-- com.github.elaraapp ?-->
 	<artifactId>validation-utils-test</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>validation-utils-test</name>
@@ -53,12 +54,12 @@
 
 	<distributionManagement>
 		<repository>
-			<id>github-releases</id>
-			<name>GitHub Packages</name>
+			<id>github-elara-app-validations-test</id>
+			<name>GitHub Packages - Elara App Validations Test</name>
 			<url>https://maven.pkg.github.com/elara-app/validations-test</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
+<!--			<releases>-->
+<!--				<enabled>true</enabled>-->
+<!--			</releases>-->
 		</repository>
 	</distributionManagement>
 
